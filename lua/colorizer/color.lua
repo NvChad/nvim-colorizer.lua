@@ -86,13 +86,86 @@ function color.hsl_to_rgb(h, s, l)
     255 * color.hue_to_rgb(p, q, h - 1 / 3)
 end
 
+local GENERIC_HSL_FN_MINIMUM_LENGTH = #"hsl(0,0,0)" - 1
+---Parse for generic hsl() function and return rgb hex.
+---@param line string: Line to parse
+---@param i number: Index of line from where to start parsing
+---@return number|nil: Index of line where the hsl function ended
+---@return string|nil: rgb hex value
+local function _generic_hsl_function_parser(line, i)
+  if #line < i + GENERIC_HSL_FN_MINIMUM_LENGTH then
+    return
+  end
+  -- local h, s, l, match_end = line:sub(i):match "^hsl%(%s*(%d+)%s*,%s*(%d+%.%d+)%s*,%s*(%d+%[.%d]+)%s*%)()"
+  local h, s, l, match_end = line:sub(i):match "^hsl%(%s*(%d+)%s*,%s*([.%d]+)%s*,%s*([.%d]+)%s*%)()"
+  if not match_end then
+    return
+  end
+  h = tonumber(h)
+  if h > 360 then
+    return
+  end
+  s = tonumber(s)
+  if s > 1 or s < 0 then
+    return
+  end
+  l = tonumber(l)
+  if l > 1 then
+    return
+  end
+  local r, g, b = color.hsl_to_rgb(h / 360, s, l)
+  if r == nil or g == nil or b == nil then
+    return
+  end
+  local rgb_hex = string.format("%02x%02x%02x", r, g, b)
+  return match_end - 1, rgb_hex
+end
+
+local GENERIC_HSLA_FN_MINIMUM_LENGTH = #"hsla(0,0,0,0)" - 1
+---Parse for generic hsl() function and return rgb hex.
+---@param line string: Line to parse
+---@param i number: Index of line from where to start parsing
+---@return number|nil: Index of line where the hsla function ended
+---@return string|nil: rgb hex value
+local function _generic_hsla_function_parser(line, i)
+  if #line < i + GENERIC_HSLA_FN_MINIMUM_LENGTH then
+    return
+  end
+  local h, s, l, a, match_end = line:sub(i):match "^hsla%(%s*(%d+)%s*,%s*([.%d]+)%s*,%s*([.%d]+)%s*,%s*([.%d]+)%s*%)()"
+  if not match_end then
+    return
+  end
+  a = tonumber(a)
+  if not a or a > 1 then
+    return
+  end
+  h = tonumber(h)
+  if h > 360 then
+    return
+  end
+  s = tonumber(s)
+  if s > 1 then
+    return
+  end
+  l = tonumber(l)
+  if l > 1 then
+    return
+  end
+  local r, g, b = color.hsl_to_rgb(h / 360, s, l)
+  if r == nil or g == nil or b == nil then
+    return
+  end
+  local rgb_hex = string.format("%02x%02x%02x", r * a, g * a, b * a)
+  return match_end - 1, rgb_hex
+end
+
 local CSS_HSL_FN_MINIMUM_LENGTH = #"hsl(0,0%,0%)" - 1
 ---Parse for hsl() css function and return rgb hex.
 ---@param line string: Line to parse
 ---@param i number: Index of line from where to start parsing
 ---@return number|nil: Index of line where the hsl function ended
 ---@return string|nil: rgb hex value
-function color.hsl_function_parser(line, i)
+local function _css_hsl_function_parser(line, i)
   if #line < i + CSS_HSL_FN_MINIMUM_LENGTH then
     return
   end
@@ -129,7 +202,7 @@ local CSS_HSLA_FN_MINIMUM_LENGTH = #"hsla(0,0%,0%,0)" - 1
 ---@param i number: Index of line from where to start parsing
 ---@return number|nil: Index of line where the hsla function ended
 ---@return string|nil: rgb hex value
-function color.hsla_function_parser(line, i)
+local function _css_hsla_function_parser(line, i)
   if #line < i + CSS_HSLA_FN_MINIMUM_LENGTH then
     return
   end
@@ -162,6 +235,30 @@ function color.hsla_function_parser(line, i)
   end
   local rgb_hex = string.format("%02x%02x%02x", r * a, g * a, b * a)
   return match_end - 1, rgb_hex
+end
+
+function color.hsl_function_parser(line, i)
+    local css_a, css_b = _css_hsl_function_parser(line, i)
+    if css_a ~= nil then
+        return css_a, css_b
+    end
+    local gen_a, gen_b = _generic_hsl_function_parser(line, i)
+    if gen_a ~= nil then
+        return gen_a, gen_b
+    end
+end
+
+function color.hsla_function_parser(line, i)
+
+    local css_a, css_b = _css_hsla_function_parser(line, i)
+    if css_a ~= nil then
+        return css_a, css_b
+    end
+    local gen_a, gen_b = _generic_hsla_function_parser(line, i)
+    if gen_a ~= nil then
+        return gen_a, gen_b
+    end
+
 end
 
 ---Convert hsl colour values to rgb.
