@@ -21,6 +21,8 @@ return {
     "text",
     "to",
     "via",
+    "ring",
+    "ring-offset",
   },
   -- Generated using https://github.com/tailwindlabs/tailwindcss/raw/master/src/public/colors.js
   colors = {
