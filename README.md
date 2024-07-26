@@ -106,6 +106,8 @@ library to do custom highlighting themselves.
       },
       -- all the sub-options of filetypes apply to buftypes
       buftypes = {},
+      -- disable built-in commands with `false`
+      default_commands = true,
   }
 ```
 
