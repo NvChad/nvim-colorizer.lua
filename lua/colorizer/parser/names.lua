@@ -57,7 +57,17 @@ function parser.name_parser(line, i, opts)
         end
       end
     end
+
     TAILWIND_ENABLED = opts.tailwind
+  end
+
+  if opts and opts.custom then
+    for k, v in pairs(opts.custom) do
+      COLOR_NAME_MINLEN = COLOR_NAME_MINLEN and min(#k, COLOR_NAME_MINLEN) or #k
+      COLOR_NAME_MAXLEN = COLOR_NAME_MAXLEN and max(#k, COLOR_NAME_MAXLEN) or #k
+      COLOR_MAP[k] = string.sub(v, 2)
+      COLOR_TRIE:insert(k)
+    end
   end
 
   if #line < i + COLOR_NAME_MINLEN - 1 then

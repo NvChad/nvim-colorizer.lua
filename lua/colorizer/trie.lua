@@ -21,7 +21,7 @@ local ffi = require "ffi"
 ffi.cdef [[
 struct Trie {
 	bool is_leaf;
-	struct Trie* character[62];
+	struct Trie* character[63];
 };
 void *malloc(size_t size);
 void free(void *ptr);
@@ -41,7 +41,7 @@ local function trie_destroy(trie)
   if trie == nil then
     return
   end
-  for i = 0, 61 do
+  for i = 0, 62 do
     local child = trie.character[i]
     if child ~= nil then
       trie_destroy(child)
@@ -52,11 +52,12 @@ end
 
 local total_char = 255
 local INDEX_LOOKUP_TABLE = ffi.new("uint8_t[?]", total_char)
-local CHAR_LOOKUP_TABLE = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
+local CHAR_LOOKUP_TABLE = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"
 do
   local b = string.byte
   local extra_char = {
     [b "-"] = true,
+    [b "_"] = true,
   }
   local byte = { ["0"] = b "0", ["9"] = b "9", ["a"] = b "a", ["A"] = b "A", ["z"] = b "z", ["Z"] = b "Z" }
   for i = 0, total_char do
@@ -156,7 +157,7 @@ end
 --- Printing utilities
 
 local function index_to_char(index)
-  if index < 0 or index > 61 then
+  if index < 0 or index > 62 then
     return
   end
   return CHAR_LOOKUP_TABLE:sub(index + 1, index + 1)
@@ -167,7 +168,7 @@ local function trie_as_table(trie)
     return nil
   end
   local children = {}
-  for i = 0, 61 do
+  for i = 0, 62 do
     local child = trie.character[i]
     if child ~= nil then
       local child_table = trie_as_table(child)

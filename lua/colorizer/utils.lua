@@ -68,7 +68,7 @@ end
 ---@param byte number
 ---@return boolean
 function utils.byte_is_valid_colorchar(byte)
-  return utils.byte_is_alphanumeric(byte) or byte == ("-"):byte()
+  return utils.byte_is_alphanumeric(byte) or byte == ("-"):byte() or byte == ("_"):byte()
 end
 
 ---Count the number of character in a string

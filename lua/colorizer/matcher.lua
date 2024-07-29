@@ -65,6 +65,11 @@ function matcher.compile(matchers, matchers_trie)
 end
 
 local MATCHER_CACHE = {}
+
+function matcher.clear_cache()
+  MATCHER_CACHE = {}
+end
+
 ---Parse the given options and return a function with enabled parsers.
 --if no parsers enabled then return false
 --Do not try make the function again if it is present in the cache
@@ -112,7 +117,7 @@ function matcher.make(options)
   matchers.max_prefix_length = 0
 
   if enable_names then
-    matchers.color_name_parser = { tailwind = options.tailwind }
+    matchers.color_name_parser = { tailwind = options.tailwind, custom = options.custom }
   end
 
   if enable_sass then
