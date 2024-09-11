@@ -62,9 +62,7 @@ Mostly, **RAW SPEED**.
 This has no external dependencies, which means you install it and **it just
 works**. Other colorizers typically were synchronous and slow, as well. Being
 written with performance in mind and leveraging the excellent LuaJIT and a
-handwritten parser, updates can be done in real time. There are plugins such as
-[hexokinase](https://github.com/RRethy/vim-hexokinase) which have good
-performance, but it has some difficulty with becoming out of sync. The downside
+handwritten parser, updates can be done in real time. The downside
 is that _this only works for Neovim_, and that will never change.
 
 Apart from that, it only applies the highlights to the current visible contents, so
