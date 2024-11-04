@@ -183,6 +183,7 @@ local SETUP_SETTINGS = {
   exclusions = { buf = {}, file = {} },
   all = { file = false, buf = false },
   default_options = USER_DEFAULT_OPTIONS,
+  default_commands = true,
 }
 
 --- Make new buffer Configuration
@@ -441,6 +442,32 @@ function colorizer.attach_to_buffer(buf, options, typ)
   BUFFER_LOCAL[buf].__augroup_id = au_group_id
 end
 
+function define_commands()
+  local command = vim.api.nvim_create_user_command
+
+  command("ColorizerAttachToBuffer", function()
+    require("colorizer").attach_to_buffer(0)
+  end, {})
+  
+  -- Stop highlighting the current buffer (detach).
+  command("ColorizerDetachFromBuffer", function()
+    require("colorizer").detach_from_buffer(0)
+  end, {})
+  
+  command("ColorizerReloadAllBuffers", function()
+    require("colorizer").reload_all_buffers()
+  end, {})
+  
+  command("ColorizerToggle", function()
+    local c = require "colorizer"
+    if c.is_buffer_attached(0) then
+      c.detach_from_buffer(0)
+    else
+      c.attach_to_buffer(0)
+    end
+  end, {})
+end
+
 ---Easy to use function if you want the full setup without fine grained control.
 --Setup an autocmd which enables colorizing for the filetypes and options specified.
 --
@@ -457,6 +484,7 @@ end
 --      user_default_options,
 --      -- all the sub-options of filetypes apply to buftypes
 --      buftypes = {},
+--      default_commands = true,
 --    }
 --</pre>
 --For all user_default_options, see |user_default_options|
@@ -471,6 +499,10 @@ function colorizer.setup(config)
   end
 
   local conf = vim.deepcopy(config) or {}
+
+  if conf.default_commands ~= false then
+    define_commands()
+  end
 
   -- if nothing given the enable for all filetypes
   local filetypes = conf.filetypes or conf[1] or { "*" }
